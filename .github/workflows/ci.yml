@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-bookworm
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: tmtest
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      # DB 테스트가 건너뛰어지지 않게 TEST_DATABASE_URL 을 준다.
+      - run: uv run pytest
+        env:
+          TEST_DATABASE_URL: postgresql+psycopg://postgres:test@127.0.0.1:5432/tmtest

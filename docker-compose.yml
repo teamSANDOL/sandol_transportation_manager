@@ -1,0 +1,89 @@
+services:
+  transportation-manager:
+    image: sandol-sandol_transportation_manager:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    environment:
+      POSTGRES_HOST: transportation-manager-db
+      POSTGRES_DB: ${POSTGRES_DB:-transportation_manager}
+      POSTGRES_USER: ${POSTGRES_USER:-transportation}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      DEV_FRONTEND_MODE: ${DEV_FRONTEND_MODE:-0}
+      BUS_FETCH_ON_DEMAND_ONLY: ${BUS_FETCH_ON_DEMAND_ONLY:-1}
+      BUS_POLL_PEAK_WINDOWS: ${BUS_POLL_PEAK_WINDOWS:-0700-1000,1600-2000}
+      BUS_POLL_PEAK_SECONDS: ${BUS_POLL_PEAK_SECONDS:-30}
+      BUS_POLL_OFFPEAK_SECONDS: ${BUS_POLL_OFFPEAK_SECONDS:-0}
+      BUS_POLL_PAUSE_WINDOWS: ${BUS_POLL_PAUSE_WINDOWS-0230-0500}
+      BUS_RATE_LIMIT_PER_MINUTE: ${BUS_RATE_LIMIT_PER_MINUTE:-30}
+      BUS_QUOTA_THRESHOLD: ${BUS_QUOTA_THRESHOLD:-10}
+      BUS_ON_DEMAND_TTL_SECONDS: ${BUS_ON_DEMAND_TTL_SECONDS:-40}
+      DATA_GO_KR_KEY1: ${DATA_GO_KR_KEY1:-}
+      DATA_GO_KR_KEY2: ${DATA_GO_KR_KEY2:-}
+      DATA_GO_KR_KEY3: ${DATA_GO_KR_KEY3:-}
+      DATA_GO_KR_KEY4: ${DATA_GO_KR_KEY4:-}
+    depends_on:
+      transportation-manager-db:
+        condition: service_healthy
+      transportation-manager-redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: always
+    networks:
+      - transportation-manager-network
+    logging: &logging
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "7"
+
+  transportation-manager-db:
+    image: postgres:15-bookworm
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-transportation_manager}
+      POSTGRES_USER: ${POSTGRES_USER:-transportation}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      TZ: Asia/Seoul
+    volumes:
+      - transportation-manager-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: always
+    networks:
+      - transportation-manager-network
+    logging: *logging
+
+  transportation-manager-redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: always
+    networks:
+      - transportation-manager-network
+    logging: *logging
+
+networks:
+  transportation-manager-network:
+    driver: bridge
+
+volumes:
+  transportation-manager-db-data:

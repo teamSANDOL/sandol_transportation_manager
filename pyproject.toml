@@ -1,0 +1,40 @@
+[project]
+name = "sandol-transportation-manager"
+version = "0.1.0"
+description = "산돌이 교통정보 서비스"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "alembic>=1.15,<2",
+    "fastapi>=0.143,<1",
+    "httpx>=0.28,<0.29",
+    "jinja2>=3.1.6",
+    "psycopg[binary]>=3.2,<4",
+    "redis>=5,<7",
+    "sqlalchemy[asyncio]>=2,<3",
+    "uvicorn[standard]>=0.54,<1",
+]
+
+[dependency-groups]
+dev = [
+    "fakeredis>=2.26",
+    "httpx>=0.28,<0.29",
+    "pytest>=9.1,<10",
+    "pytest-asyncio>=1.0",
+    "ruff>=0.17,<1",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
