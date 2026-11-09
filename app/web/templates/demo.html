@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{% if selected %}{{ selected.name }} - {% endif %}산돌이 버스{% endblock %}
+{% block body_class %}page-demo{% endblock %}
+{% block content %}
+<div id="app"
+     data-api-base=""
+     data-refresh="{{ refresh_seconds }}"
+     data-station="{{ selected.station_number if selected else '' }}">
+  <aside class="side">
+    <h1 class="side-title">산돌이 버스</h1>
+    <p class="side-sub">테스트용 화면이다</p>
+    <dl id="quota" class="quota" aria-label="남은 quota"></dl>
+    <nav>
+      {% for priority in (1, 2) %}
+      <h2 class="side-group">{{ priority }}순위 정류장</h2>
+      <ul class="side-list">
+        {% for stop in stops if stop.priority == priority %}
+        <li>
+          <a class="side-item{% if selected and selected.station_number == stop.station_number %} active{% endif %}"
+             href="{{ url_for('kiosk', station_number=stop.station_number) }}"
+             data-station="{{ stop.station_number }}"
+             data-name="{{ stop.name }}">
+            <span class="side-name">{{ stop.name }}</span>
+            <span class="side-no">{{ stop.station_number }}</span>
+            <span class="side-tags">
+              {% for d in stop.directions %}<em>{{ labels[d] }}</em>{% endfor %}
+              {% if stop.polled %}<em class="auto">자동</em>{% endif %}
+            </span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div id="placeholder" class="placeholder"{% if selected %} hidden{% endif %}>
+      <p>왼쪽에서 정류장을 선택한다.</p>
+      <p class="hint">정류장을 고르면 실시간 도착 정보를 키오스크처럼 보여 준다.</p>
+    </div>
+
+    <div id="kiosk"{% if not selected %} hidden{% endif %}>
+      <header class="bar">
+        <div class="title">
+          <h2 id="stop-name">{{ selected.name if selected else '' }}</h2>
+          <span class="no" id="stop-no">{{ selected.station_number if selected else '' }}</span>
+        </div>
+        <div class="clock" id="clock"></div>
+      </header>
+
+      <p id="notice" class="notice" hidden></p>
+
+      <div id="filters" class="filters"></div>
+
+      <section class="soon">
+        <h3>잠시 후 도착</h3>
+        <ul id="soon" class="soon-list"></ul>
+        <p id="soon-empty" class="empty" hidden>3분 안에 도착하는 버스가 없다.</p>
+      </section>
+
+      <section class="all">
+        <h3>버스 목록</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>노선</th><th>행선지와 경유</th><th>첫번째</th><th>두번째</th><th>정보</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </section>
+
+      <footer class="foot">
+        <span class="legend">
+          <i class="crowd c1"></i>여유 <i class="crowd c2"></i>보통
+          <i class="crowd c3"></i>혼잡 <i class="crowd c4"></i>매우 혼잡
+        </span>
+        <span id="updated"></span>
+      </footer>
+    </div>
+  </main>
+</div>
+<script src="{{ url_for('static', path='js/kiosk.js') }}?v={{ asset_version }}"></script>
+{% endblock %}

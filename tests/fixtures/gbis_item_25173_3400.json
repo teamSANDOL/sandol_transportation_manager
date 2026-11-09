@@ -1,0 +1,43 @@
+{
+ "response": {
+  "comMsgHeader": "",
+  "msgHeader": {
+   "queryTime": "2026-11-03 19:41:54.667",
+   "resultCode": 0,
+   "resultMessage": "정상적으로 처리되었습니다."
+  },
+  "msgBody": {
+   "busArrivalItem": {
+    "crowded1": "",
+    "crowded2": "",
+    "flag": "PASS",
+    "locationNo1": "",
+    "locationNo2": "",
+    "lowPlate1": "",
+    "lowPlate2": "",
+    "plateNo1": "",
+    "plateNo2": "",
+    "predictTime1": "",
+    "predictTime2": "",
+    "remainSeatCnt1": "",
+    "remainSeatCnt2": "",
+    "routeDestId": 122000742,
+    "routeDestName": "삼성서초역삼세무서",
+    "routeId": 224000050,
+    "routeName": 3400,
+    "routeTypeCd": 11,
+    "staOrder": 3,
+    "stationId": 224000513,
+    "stationNm1": "",
+    "stationNm2": "",
+    "taglessCd1": "",
+    "taglessCd2": "",
+    "turnSeq": 36,
+    "vehId1": "",
+    "vehId2": "",
+    "predictTimeSec1": "",
+    "predictTimeSec2": ""
+   }
+  }
+ }
+}
